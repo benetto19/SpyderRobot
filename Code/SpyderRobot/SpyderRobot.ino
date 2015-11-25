@@ -1,11 +1,23 @@
 #include <Adafruit_PWMServoDriver.h>
 #include <Wire.h>
 
+/*
+ TO-DO
+ ___________________
+  ~Bring in wires
+  ~Test code with servos
+  ~Finish soldering other PWM driver
+  ~Fix CAD model
+  ~Reprint CAD parts
+  __________________
+ */
+
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 
 class ServoInfo {
-  uint16_t pos; uint16_t num;
+  
 public:
+  uint16_t pos; uint16_t num;
   ServoInfo(uint16_t num) {
     this->pos = 0;
     this->num = num;
@@ -57,63 +69,70 @@ ServoInfo leg4[] = {shoulder4, elbow4, wrist4};
 ServoInfo leg5[] = {shoulder5, elbow5, wrist5};
 ServoInfo leg6[] = {shoulder6, elbow6, wrist6};
 
+double pie = (SERVOMAX - SERVOMIN)*360; 
 
-void setup() {
-  pwm.begin();
-  pwm.setPWMFreq(60); //60Hz updates
-}
-
-void loop() { //WILL NOT LET ME ACCESS MOTHERF**KER
-  moveLegToPosition(leg1, 0, 0, 0);
-  moveLegToPosition(leg2, 0, 0, 0);
-  moveLegToPosition(leg3, 0, 0, 0);
-  moveLegToPosition(leg4, 0, 0, 0);
-  moveLegToPosition(leg5, 0, 0, 0);
-  moveLegToPosition(leg6, 0, 0, 0);
-}
 
 //moves servo a set of positions from where it is
-void moveServo(ServoInfo* servo, uint16_t addPos);
-void moveServo(ServoInfo* servo, uint16_t addPos) { 
-  uint16_t pos = servo->getPosition();
+void moveServo(ServoInfo servo, uint16_t addPos);
+void moveServo(ServoInfo servo, uint16_t addPos) { 
+  uint16_t pos = servo.getPosition();
   if(addPos > 0) { //if positive
   for (uint16_t pulse = pos; pulse <= pos + addPos; pulse++) { //may or may not work
-    pwm.setPWM(servo->getNum(), 0, pulse);} 
+    pwm.setPWM(servo.getNum(), 0, pulse);} 
   }
   else { //if negative
     for (uint16_t pulse = pos + addPos ; pulse >= pos; pulse--) { //may or may not work
-      pwm.setPWM(servo->getNum(), 0, pulse);}
+      pwm.setPWM(servo.getNum(), 0, pulse);}
   }
 }
 
 //moves servo to a set position
-void moveToPosition(ServoInfo* servo, uint16_t newPos);
-void moveToPosition(ServoInfo* servo, uint16_t newPos) {
-   uint16_t pos = servo->getPosition();
+void moveToPosition(ServoInfo servo, uint16_t newPos);
+void moveToPosition(ServoInfo servo, uint16_t newPos) {
+   uint16_t pos = servo.getPosition();
   if(newPos > 0) { //if positive
   for (uint16_t pulse = pos; pulse <= newPos; pulse++) { //may or may not work
-    pwm.setPWM(servo->getNum(), 0, pulse);}
+    pwm.setPWM(servo.getNum(), 0, pulse);}
   }
   else { //if negative
     for (uint16_t pulse = pos; pulse >= newPos; pulse--) { //may or may not work
-      pwm.setPWM(servo->getNum(), 0, pulse);} 
+      pwm.setPWM(servo.getNum(), 0, pulse);} 
   }
 }
 
-void moveLeg(ServoInfo* leg[], uint16_t spos, uint16_t epos, uint16_t wpos);
-void moveLeg(ServoInfo* leg[], uint16_t spos, uint16_t epos, uint16_t wpos) {
+void moveLeg(ServoInfo leg[], uint16_t spos, uint16_t epos, uint16_t wpos);
+void moveLeg(ServoInfo leg[], uint16_t spos, uint16_t epos, uint16_t wpos) {
   moveServo(leg[0], spos);
   moveServo(leg[1], epos);
   moveServo(leg[2], wpos);
 }
 
-void moveLegToPosition(ServoInfo* leg[], uint16_t spos, uint16_t epos, uint16_t wpos);
-void moveLegToPosition(ServoInfo* leg[], uint16_t spos, uint16_t epos, uint16_t wpos) {
+void moveLegToPosition(ServoInfo leg[], uint16_t spos, uint16_t epos, uint16_t wpos);
+void moveLegToPosition(ServoInfo leg[], uint16_t spos, uint16_t epos, uint16_t wpos) {
   moveToPosition(leg[0], spos);
   moveToPosition(leg[1], epos);
   moveToPosition(leg[2], wpos);
 }
 
+void setup() {
+  Serial.begin(9600);
+  pwm.begin();
+  pwm.setPWMFreq(60); //60Hz updates
+  Serial.println("Spyder Initiated");
+}
 
+void loop() {
+  
+  if(Serial.available()) {
+    String cmd = Serial.readString();
+    Serial.println("You said: " + cmd);
+  }
+  else {
+    Serial.println("Awaiting User Command");
+    while(!Serial.available()){
+       delay(500);
+    }
+  }
+}
   
 
