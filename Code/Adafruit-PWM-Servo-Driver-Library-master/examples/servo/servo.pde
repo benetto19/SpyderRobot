@@ -19,10 +19,8 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 
-// called this way, it uses the default address 0x40, PWM1 = 0x41
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40);
-Adafruit_PWMServoDriver pwm1 = Adafruit_PWMServoDriver(0x41);
-
+// called this way, it uses the default address 0x40
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 // you can also call it with a different address you want
 //Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x41);
 
@@ -34,17 +32,21 @@ Adafruit_PWMServoDriver pwm1 = Adafruit_PWMServoDriver(0x41);
 #define SERVOMAX  600 // this is the 'maximum' pulse length count (out of 4096)
 
 // our servo # counter
-uint8_t servonum = 1;
+uint8_t servonum = 0;
 
 void setup() {
   Serial.begin(9600);
   Serial.println("16 channel Servo test!");
 
+#ifdef ESP8266
+  Wire.pins(2, 14);   // ESP8266 can use any two pins, such as SDA to #2 and SCL to #14
+#endif
+
   pwm.begin();
-  pwm1.begin();
   
   pwm.setPWMFreq(60);  // Analog servos run at ~60 Hz updates
-  pwm1.setPWMFreq(60); 
+
+  yield();
 }
 
 // you can use this function if you'd like to set the pulse length in seconds
@@ -65,24 +67,18 @@ void setServoPulse(uint8_t n, double pulse) {
 
 void loop() {
   // Drive each servo one at a time
-
-  for (uint16_t pulselen = (SERVOMIN/2); pulselen < SERVOMAX; pulselen++) {
-    pwm.setPWM(1, 0, pulselen);
-    pwm.setPWM(5, 0, pulselen);
-    pwm.setPWM(13, 0, pulselen);
-    pwm1.setPWM(2, 0, pulselen);
-    pwm1.setPWM(10, 0, pulselen);
-    pwm1.setPWM(14, 0, pulselen); 
+  Serial.println(servonum);
+  for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
+    pwm.setPWM(servonum, 0, pulselen);
   }
-  delay(1000);
-  for (uint16_t pulselen = SERVOMAX; pulselen > (SERVOMIN/2); pulselen--) {
-    pwm.setPWM(1, 0, pulselen);
-    pwm.setPWM(5, 0, pulselen);
-    pwm.setPWM(13, 0, pulselen);
-    pwm1.setPWM(2, 0, pulselen);
-    pwm1.setPWM(10, 0, pulselen);
-    pwm1.setPWM(14, 0, pulselen); 
-  }
-  delay(1000);
 
+  delay(500);
+  for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
+    pwm.setPWM(servonum, 0, pulselen);
+  }
+
+  delay(500);
+
+  servonum ++;
+  if (servonum > 7) servonum = 0;
 }

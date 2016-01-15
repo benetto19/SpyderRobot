@@ -110,7 +110,20 @@ void setup() {
 
 
 void loop() {
-  
+  for(int i = 0; i <= 15; i++) {
+  for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
+    pwmR.setPWM(i, 0, pulselen);
+    pwmL.setPWM(i, 0, pulselen);
+  }
+  delay(500);
+  for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
+    pwmR.setPWM(i, 0, pulselen);
+    pwmL.setPWM(i, 0, pulselen);
+    
+  }
+  delay(500);
+  }
+  /*
   if(Serial.available()) {
    String cmd = Serial.readString();
    Serial.println("You said: " + cmd);
@@ -149,7 +162,7 @@ void loop() {
           thisServo.setPosition(newPos);
         }
       }
-      ////MORE WORK HERE
+
       if(part.equals("all shoulders")) {//shoulders
         prompt("By how many degrees?");
         int amount = convertToPosition(Serial.parseInt());
@@ -160,7 +173,7 @@ void loop() {
           thisServo.setPosition(newPos);
         }
       }
-            ////MORE WORK HERE
+
       if(part.equals("all elbows")) {//elbows
         prompt("By how many degrees?");
         int amount = convertToPosition(Serial.parseInt());
@@ -171,7 +184,7 @@ void loop() {
           thisServo.setPosition(newPos);
         }
       }
-            ////MORE WORK HERE
+
       if(part.equals("all wrists")) {//wrists
         prompt("By how many degrees?");
         int amount = convertToPosition(Serial.parseInt());
@@ -193,15 +206,45 @@ void loop() {
       for(int i = 0; i <= 17; i++) {
         imprintPos[i] = allServos[i].getPosition();
       }
-      prompt("Imprint Saved");      ////MORE WORK HERE
+      prompt("Imprint Saved");      
     }
     else if(cmd.equals("reset")) { //reset to last imprint
+
       for(int i = 0; i <= 17; i++) {
         uint16_t change = imprintPos[i] - allServos[i].getPosition(); 
         pwm.setPWM(allServos[i].getNum(), 0, change);
       }
+    }    
+    else if(cmd.equals("program")) {//run program
+      prompt("#: ");
+      int num = Serial.parseInt(); 
+      
+      switch(num) {
+        case 0: { //servotest all wrists
+          for(int i = 0; i < 6; i++) {
+              for(uint16_t pulse = SERVOMIN; pulse < SERVOMAX; pulse++) {
+                pwm.setPWM(wrists[i].getNum(), 0, pulse);
+                //wrists[i].setPosition(pulse);
+              }
+              delay(500);
+              for(uint16_t pulse = SERVOMAX; pulse < SERVOMIN; pulse--) {
+                pwm.setPWM(wrists[i].getNum(), 0, pulse);
+                //wrists[i].setPosition(pulse);
+              }
+            }//end for
+          }//0
+          
+        case 1: {}//1
+        case 2: {}//2
+        case 3: {}//3
+      }
     }
     //---------------INSERT NEW COMMANDS HERE---------------
+    else if(cmd.equals("zero")) {//zero all positions
+      for(int i = 0; i <= 17; i++) {
+         allServos[i].setPosition(0);
+      }
+    }
     else {//confuse
       prompt("I do not understand your command, master");
     }
@@ -213,6 +256,7 @@ void loop() {
        delay(500);
     }//end while
   }//end else
+  */
 }//end loop
   
 
